@@ -10,13 +10,13 @@ import BotSection from '@/sections/homeSections/BotSection.vue';
 
 <template>
     <main class="">
-        <HeroSection/>
+        <!-- <HeroSection/>
         <ImageSection/>
         <AboutExpoSection/>
-        <ParticipantSection/>
+        <ParticipantSection/> -->
         <BotSection/>
-        <AddressSection/>
-        <RegisterSection/>
+        <!-- <AddressSection/>
+        <RegisterSection/> -->
     </main>
 </template>
 

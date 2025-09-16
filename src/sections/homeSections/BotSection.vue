@@ -159,7 +159,8 @@ async function sendMessage(event) {
       }
     );
     const data = await response.json();
-    const botText = data?.data?.data?.body?.[0]?.text ?? `Thanks, ${userName.value}!`
+    const botText =
+      data?.data?.data?.body?.[0]?.text ?? `Thanks, ${userName.value}!`;
 
     const lastMsg = convo.value[convo.value.length - 1];
 
@@ -179,7 +180,10 @@ async function sendMessage(event) {
       });
     }
   } catch (error) {
-    convo.value.push({ sender: "bot", text: "There was an error, please try again" });
+    convo.value.push({
+      sender: "bot",
+      text: "There was an error, please try again",
+    });
   }
 
   isGenerating.value = false;
@@ -191,17 +195,27 @@ defineExpose({ open, close });
 
 <template>
   <section
-    class="py-10 xl:py-40 px-4 xl:px-0 bg-gradient-to-r from-[#E65C00] to-[#D8B50B] relative"
+    class="py-10 h-screen bg-gradient-to-r from-[#E65C00] to-[#D8B50B] relative overflow-hidden"
   >
-    <div class="max-w-7xl mx-auto relative z-20">
+    <div
+      class="bg-gradient-to-b from-black to-transparent h-[200px] w-full absolute top-0"
+    ></div>
+    <div
+      class="bg-gradient-to-t from-black to-transparent h-[200px] w-full absolute bottom-0"
+    ></div>
+    <div
+      class="max-w-7xl mx-auto relative z-20 flex items-center justify-center h-full px-4 xl:px-0"
+    >
       <div
-        class="w-full md:w-[60%] mx-auto max-w-full rounded-3xl shadow-lg flex flex-col mt-16 bg-white"
+        class="w-full md:w-[60%] mx-auto max-w-full rounded-3xl shadow-lg flex flex-col mt-16 bg-white relative z-10"
       >
         <!-- Header -->
         <div
           class="bg-white p-4 text-black flex items-center gap-3 rounded-t-3xl"
         >
-          <h1 class="font-inter gradient-text font-medium text-[30px] md:text-[40px]">
+          <h1
+            class="font-inter gradient-text font-medium text-[30px] md:text-[40px]"
+          >
             Hey,<br />How can I help you ?
           </h1>
         </div>
@@ -209,7 +223,7 @@ defineExpose({ open, close });
         <!-- Chat body -->
         <div
           ref="chatContainer"
-          class="flex-1 overflow-auto flex-col-reverse p-5 flex gap-4 max-h-[500px] no-scrollbar bg-white"
+          class="flex-1 overflow-auto overflow-x-hidden flex-col-reverse p-5 flex gap-4 min-h-[230px] max-h-[230px] no-scrollbar bg-white relative"
         >
           <div
             v-for="(msg, idx) in convo.slice().reverse()"
@@ -244,33 +258,13 @@ defineExpose({ open, close });
                 v-html="msg.text"
               ></div>
             </div>
-
-            <!-- Render image above buttons if it exists -->
-            <!-- <div v-if="msg.image" class="my-3">
-              <img
-                :src="msg.image"
-                alt="Chat image"
-                class="max-w-xs rounded-lg shadow cursor-pointer"
-                @click="openImageModal(msg.image)"
-              />
-            </div> -->
-
-            <!-- Render buttons if they exist -->
-            <!-- <div v-if="msg.buttons && msg.buttons.length > 0" class="mt-3">
-              <div
-                v-for="(button, btnIdx) in msg.buttons"
-                :key="btnIdx"
-                class="flex justify-between mb-2"
-              >
-                <button
-                  @click="handleButtonClick(button.id, button.title)"
-                  class="bg-green-400 text-white py-2 px-4 rounded-full w-fit hover:bg-green-700 transition"
-                >
-                  {{ button.title }}
-                </button>
-              </div>
-            </div> -->
           </div>
+        </div>
+
+        <div
+          class="hidden md:block absolute bottom-[58%] right-[-120px] xl:bottom-[32%] xl:right-[-195px] max-w-[600px] w-[70%]"
+        >
+          <img src="/images/hero2.webp" alt="" />
         </div>
         <div
           v-if="isGenerating"
@@ -285,6 +279,7 @@ defineExpose({ open, close });
             <em>{{ botName }} is typing...</em>
           </div>
         </div>
+        
 
         <!-- Input -->
         <form
@@ -307,23 +302,11 @@ defineExpose({ open, close });
       </div>
     </div>
 
-    <!-- <div
-      v-if="imageModalSrc"
-      @click="closeImageModal"
-      class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 cursor-pointer"
-    >
-      <img
-        :src="imageModalSrc"
-        alt="Expanded Chat Image"
-        class="max-h-[90vh] max-w-[90vw] rounded-lg shadow-lg"
-      />
-    </div> -->
-
-    <div class="absolute top-0 opacity-50">
-      <img src="/images/pattern.webp" alt="" />
+    <div class="absolute top-0 opacity-40 h-full">
+      <img src="/images/pattern.webp" alt="" class="object-cover"/>
     </div>
 
-    <div class="hidden md:block absolute bottom-0 left-0 max-w-[600px] w-[40%]">
+    <div class="absolute bottom-[50%] md:bottom-0 md:left-0 max-w-[600px] xl:w-[40%]">
       <img src="/images/hero.webp" alt="" />
     </div>
   </section>
@@ -353,5 +336,33 @@ defineExpose({ open, close });
   background: linear-gradient(90deg, #e65c00, #d8b50b); /* example gradient */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+section {
+  background: linear-gradient(
+    270deg,
+    #e65c00,
+    #f2994a,
+    #f2c94c,
+    #d8b50b,
+    #e0820e,
+    #c9a700,
+    #e27105,
+    #d8b50b
+  );
+  background-size: 1600% 1600%;
+  animation: gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 </style>
