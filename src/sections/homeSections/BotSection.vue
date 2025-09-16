@@ -78,7 +78,7 @@ onMounted(() => {
     // Prompt for name if no user info found
     convo.value.push({
       sender: "bot",
-      text: "Welcome! Please enter your name to start chatting.",
+      text: "Welcome! What can i help with you today?",
       buttons: null,
       image: null,
     });
