@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.title-text{
+    @apply font-arsenal font-semibold uppercase text-[#E65C00] text-[40px] md:text-[50px]
+}
