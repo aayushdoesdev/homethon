@@ -1,7 +1,7 @@
 <script setup>
 import { ref, nextTick, onMounted, watch } from "vue";
 import gsap from "gsap";
-import { Vue3Marquee } from "vue3-marquee";
+import StarsBg from "@/components/StarsBg.vue";
 
 // LocalStorage keys
 const LOCAL_USER_KEY = "mychat_name";
@@ -26,6 +26,16 @@ const convo = ref([]);
 const userInput = ref("");
 const isGenerating = ref(false);
 const chatContainer = ref(null);
+const showHeader = ref(true);
+const showIntro = ref(true);
+const showChat = ref(false);
+
+const introLines = [
+  "👋 Meet MR. Homethon",
+  "Here to help you find projects in your budget,",
+  "Check price trends, access RERA info,",
+  "And get quick answers to all your FAQs.",
+];
 
 // Store user profile
 const userName = ref(localStorage.getItem(LOCAL_USER_KEY) || "");
@@ -38,34 +48,49 @@ function close() {
   show.value = false;
 }
 
-// Scroll chat container to bottom
+// Enhanced scroll function with better reliability
 function scrollToBottom() {
   if (chatContainer.value) {
-    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    requestAnimationFrame(() => {
+      chatContainer.value.scrollTo({
+        top: chatContainer.value.scrollHeight,
+        behavior: 'smooth'
+      });
+    });
   }
 }
 
-// Watch convo to auto-scroll on new messages and animate them
-watch(convo, async () => {
+// Enhanced watch for convo with better timing
+watch(convo, async (newConvo, oldConvo) => {
   await nextTick();
-  scrollToBottom();
+  
+  // Add delay to ensure DOM is fully rendered
+  setTimeout(() => {
+    scrollToBottom();
+    
+    // Only animate if a new message was added (not on initialization)
+    if (newConvo.length > (oldConvo?.length || 0)) {
+      const messages = chatContainer.value?.querySelectorAll(".chat-message");
+      if (messages && messages.length > 0) {
+        const newestMessage = messages[messages.length - 1];
+        if (newestMessage) {
+          gsap.fromTo(
+            newestMessage,
+            { y: 30, opacity: 0, scale: 0.95 },
+            { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }
+          );
+        }
+      }
+    }
+  }, 100);
+}, { deep: true });
 
-  // Animate the newest message (last in array, first in reversed display)
-  const messages = chatContainer.value?.querySelectorAll(".chat-message");
-  if (messages && messages.length > 0) {
-    const newestMessage = messages[0]; // First message in reversed display
-    gsap.fromTo(
-      newestMessage,
-      { y: 30, opacity: 0, scale: 0.95 },
-      { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }
-    );
-  }
-});
-
-// Watch typing indicator
-watch(isGenerating, (newVal) => {
+// Enhanced watch for typing indicator
+watch(isGenerating, async (newVal) => {
   if (newVal) {
-    nextTick(() => {
+    await nextTick();
+    setTimeout(() => {
+      scrollToBottom();
       const typingIndicator = document.querySelector(".typing-indicator");
       if (typingIndicator) {
         gsap.fromTo(
@@ -74,7 +99,7 @@ watch(isGenerating, (newVal) => {
           { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }
         );
       }
-    });
+    }, 50);
   }
 });
 
@@ -97,12 +122,12 @@ function escapeHtml(text) {
 onMounted(() => {
   if (userName.value && userId.value) {
     // If user info exists, show welcome back message
-    convo.value.push({
-      sender: "bot",
-      text: `What are you looking for today?`,
-      buttons: null,
-      image: null,
-    });
+    // convo.value.push({
+    //   sender: "bot",
+    //   text: `What are you looking for today?`,
+    //   buttons: null,
+    //   image: null,
+    // });
   } else if (!userName.value && convo.value.length === 0) {
     // Prompt for name if no user info found
     convo.value.push({
@@ -172,11 +197,65 @@ onMounted(() => {
   nextTick(setupInputAnimations);
 });
 
+onMounted(async () => {
+  await nextTick();
+
+  const lines = document.querySelectorAll(".intro-line");
+  const tl = gsap.timeline({
+    onComplete: async () => {
+      showIntro.value = false;
+      showChat.value = true;
+
+      await nextTick();
+
+      const chat = document.querySelector(".chat-container");
+      if (chat) {
+        gsap.set(chat, { opacity: 0, y: 50 });
+        gsap.to(chat, {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          ease: "power3.out",
+          clearProps: "all",
+        });
+      }
+    },
+  });
+
+  lines.forEach((line, i) => {
+    if (i === 0) {
+      tl.fromTo(
+        line,
+        { y: 20, opacity: 0, display: "block" },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
+      );
+    } else {
+      tl.to(
+        lines[i - 1],
+        { y: -20, opacity: 0, duration: 0.8, ease: "power3.inOut", onComplete: () => {
+          lines[i - 1].style.display = "none";
+        }},
+        "+=0.6"
+      )
+        .fromTo(
+          line,
+          { y: 20, opacity: 0, display: "block" },
+          { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
+        );
+    }
+  });
+});
+
+// Enhanced sendMessage function with better scroll handling
 async function sendMessage(event) {
   event.preventDefault();
   if (!userInput.value.trim()) return;
 
   const message = userInput.value.trim();
+
+  if (showHeader.value) {
+    showHeader.value = false;
+  }
 
   // Animate input clear
   const input = event.target.querySelector("input");
@@ -193,6 +272,10 @@ async function sendMessage(event) {
 
     convo.value.push({ sender: "user", text: userName.value });
 
+    // Force scroll after adding user message
+    await nextTick();
+    scrollToBottom();
+
     // Minimal payload format for initial message
     const payload = [
       {
@@ -204,7 +287,7 @@ async function sendMessage(event) {
     try {
       isGenerating.value = true;
       const response = await fetch(
-        "https://n8n.brahmaastra.ai/webhook/dceaa3e1-8ffa-4e10-bad5-b0e70fcb65eb",
+        "https://n8n.brahmaastra.ai/webhook/f04181ee-edbe-40e6-8546-18a4718b3c02",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -215,14 +298,17 @@ async function sendMessage(event) {
 
       convo.value.push({
         sender: "bot",
-        text:
-          data[0]?.text ??
-          `Thanks, ${userName.value}! How can I help you today?`,
-        /* buttons: null,
-        image: null, */
+        text: data[0]?.text ?? `Thanks, ${userName.value}! How can I help you today?`,
       });
+
+      // Force scroll after adding bot response
+      await nextTick();
+      setTimeout(() => scrollToBottom(), 100);
+
     } catch (error) {
       convo.value.push({ sender: "bot", text: "Error connecting to bot." });
+      await nextTick();
+      setTimeout(() => scrollToBottom(), 100);
     }
 
     isGenerating.value = false;
@@ -232,12 +318,17 @@ async function sendMessage(event) {
 
   // Normal chat flow after name is set
   convo.value.push({ sender: "user", text: escapeHtml(message) });
+  
+  // Force scroll after adding user message
+  await nextTick();
+  scrollToBottom();
+  
   isGenerating.value = true;
 
   // Minimal payload for normal messages as well
   const payload = [
     {
-      unique_id: userId.value, // You can adjust unique_id logic as needed
+      unique_id: userId.value,
       text: message,
     },
   ];
@@ -252,191 +343,165 @@ async function sendMessage(event) {
       }
     );
     const data = await response.json();
-    const botText =
-      data?.data?.data?.body?.[0]?.text ?? `Thanks, ${userName.value}!`;
+    const botText = data?.data?.data?.body?.[0]?.text ?? data[0]?.text ?? `Thanks, ${userName.value}!`;
 
-    const lastMsg = convo.value[convo.value.length - 1];
+    convo.value.push({
+      sender: "bot",
+      text: botText,
+    });
 
-    if (lastMsg && lastMsg.sender === "bot") {
-      lastMsg.text = data[0]?.text ?? "No response from bot.";
-      /* lastMsg.buttons = null;
-      lastMsg.image = null; */
-      convo.value.splice(
-        convo.value.length - 1,
-        1,
-        JSON.parse(JSON.stringify(lastMsg))
-      );
-    } else {
-      convo.value.push({
-        sender: "bot",
-        text: botText ?? "No response from bot.",
-      });
-    }
+    // Force scroll after adding bot response
+    await nextTick();
+    setTimeout(() => scrollToBottom(), 100);
+
   } catch (error) {
     convo.value.push({
       sender: "bot",
       text: "There was an error, please try again",
     });
+    await nextTick();
+    setTimeout(() => scrollToBottom(), 100);
   }
 
   isGenerating.value = false;
   userInput.value = "";
 }
-
-defineExpose({ open, close });
 </script>
 
 <template>
   <section class="h-screen bg-black relative overflow-hidden">
+          <StarsBg />
+    <!-- Intro Section -->
     <div
-      class="max-w-7xl mx-auto relative z-20 flex flex-col items-center justify-between md:justify-center h-full px-4 xl:px-0"
+      v-if="showIntro"
+      class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-50"
     >
-      <!-- <Vue3Marquee
-        :gradient="true"
-        :gradient-color="[0, 0, 0]"
-        gradient-length="20%"
-      >
-        <div
-          class="md:hidden bg-white/10 py-6 px-2 w-full rounded-2xl flex items-center justify-between relative mr-10 min-w-[300px] h-[150px]"
-        >
-          <div class="">
-            <img
-              src="/images/hero.webp"
-              alt=""
-              class="absolute bottom-0 left-0 w-[50%]"
-            />
-          </div>
-          <div class="w-[60%] self-end font-inter text-white space-y-2">
-            <p class="font-semibold">Mr Homethon</p>
-            <p class="border-l-4 pl-2 text-[13px]">
-              Find Projects in your budget & Location
-            </p>
-            <p class="border-l-4 pl-2 text-[13px]">Price Trends & Forecast</p>
-          </div>
-        </div>
-        <div
-          class="md:hidden bg-white/10 py-6 px-2 w-full rounded-2xl flex items-center justify-between relative mr-10 min-w-[350px] h-[150px]"
-        >
-          <div class="">
-            <img
-              src="/images/hero3.webp"
-              alt=""
-              class="absolute bottom-0 left-0 w-[50%]"
-            />
-          </div>
-          <div class="w-[60%] self-end font-inter text-white space-y-2">
-            <p class="font-semibold">Mr Homethon</p>
-            <p class="border-l-4 pl-2 text-[13px]">
-              RERA Information & Document
-            </p>
-            <p class="border-l-4 pl-2 text-[13px]">NAREDCO/ Homethon FAQ’s</p>
-          </div>
-        </div>
-      </Vue3Marquee> -->
-
       <div
-        class="w-full md:w-[60%] mx-auto max-w-full rounded-3xl shadow-lg flex flex-col mt-6 md:bg-white/5 backdrop-blur-sm relative z-10 border border-white/25"
+        class="text-[30px] md:text-[50px] font-bold leading-snug max-w-7xl"
+      >
+        <span
+          v-for="(line, idx) in introLines"
+          :key="idx"
+          class="intro-line block mb-2 gradient-text"
+          style="opacity: 0"
+
+        >
+          {{ line }}
+        </span>
+      </div>
+    </div>
+
+    <div v-show="showChat" class="relative h-full w-full">
+      <!-- Center chat panel vertically and horizontally using flex -->
+      <div
+        class="absolute inset-0 flex flex-col items-center justify-center z-30 px-4 xl:px-0"
       >
         <!-- Header -->
-        <div
-          class="flex chat-header md:bg-white/5 p-4 text-black items-center gap-3 rounded-t-3xl"
-        >
+        <div v-if="showHeader" class="flex chat-header p-4 items-center gap-3">
           <h1
-            class="font-inter gradient-text font-medium text-[30px] md:text-[40px]"
+            class="font-inter gradient-text font-medium text-[30px] md:text-[60px]"
           >
-            Hey,<br />How can I help you ?
+            Hey, How can I help you ?
           </h1>
         </div>
 
-        <!-- Chat body -->
         <div
-          ref="chatContainer"
-          class="chat-body flex-1 overflow-y-auto overflow-x-hidden flex-col-reverse p-5 flex gap-4 min-h-[65vh] max-h-[65vh] md:min-h-[230px] md:max-h-[230px] no-scrollbar md:bg-white/5 relative"
+          class="w-full md:w-[60%] mx-auto max-w-full rounded-3xl shadow-lg flex flex-col md:bg-white/5 backdrop-blur-sm relative z-10 border border-white/25"
         >
+          <!-- Chat body -->
           <div
-            v-for="(msg, idx) in convo.slice().reverse()"
-            :key="idx"
-            :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'"
-            class="chat-message flex flex-col"
+            ref="chatContainer"
+            class="chat-body flex-1 overflow-y-auto overflow-x-hidden flex-col p-5 flex gap-4 max-h-[70dvh] md:min-h-[100px] md:max-h-[500px] no-scrollbar md:bg-white/5 relative"
           >
-            <span
-              class="text-[12px] font-semibold mb-1 select-none text-white"
-              :class="msg.sender === 'user' ? 'self-end' : 'self-start'"
-            >
-              {{ msg.sender === "user" ? "User" : botName }}
-            </span>
-
-            <!-- Wrap icon and message in a horizontal flex -->
+            <!-- Messages in normal order -->
             <div
+              v-for="(msg, idx) in convo"
+              :key="idx"
               :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'"
-              class="flex items-start gap-2"
+              class="chat-message flex flex-col"
             >
-              <!-- Show icon only for bot on the left -->
-              <!-- <span v-if="msg.sender !== 'user'" class="bot-icon">
-                <img src="/svg/chat-icon.svg" alt="" class="w-8 h-8 mt-1" />
-              </span> -->
-
-              <div
-                :class="[
-                  msg.sender === 'user'
-                    ? 'bg-orange-100 text-orange-900 self-end rounded-br-none'
-                    : 'bg-gradient-to-r from-[#E65C00] to-[#D8B50B] text-white rounded-bl-none',
-                  'font-inter rounded-xl px-4 py-2 text-[16px] max-w-xs shadow-md whitespace-pre-wrap message-bubble',
-                ]"
-                v-html="msg.text"
-              ></div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="hidden md:block absolute bottom-[58%] right-[-120px] xl:bottom-[32%] xl:right-[-195px] max-w-[600px] w-[70%]"
-        >
-          <img src="/images/hero2.webp" alt="" />
-        </div>
-
-        <div
-          v-if="isGenerating"
-          class="typing-indicator flex flex-col justify-start p-4 md:bg-white/5"
-        >
-          <span class="text-[12px] font-semibold mb-1 select-none text-white">
-            {{ botName }}
-          </span>
-          <div class="flex items-start gap-2 justify-start">
-            <span class="bot-icon">
-              <img src="/svg/chat-icon.svg" alt="" class="w-8 h-8 mt-1" />
-            </span>
-            <div
-              class="md:bg-white/5 text-white rounded-xl px-4 py-2 text-[16px] max-w-xs shadow-md rounded-bl-none"
-            >
-              <em class="typing-text">{{ botName }} is typing...</em>
-              <span class="typing-dots">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
+              <span
+                class="text-[12px] font-semibold mb-1 select-none text-white"
+                :class="msg.sender === 'user' ? 'self-end' : 'self-start'"
+              >
+                {{ msg.sender === "user" ? "User" : botName }}
               </span>
+
+              <!-- Wrap icon and message in a horizontal flex -->
+              <div
+                :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'"
+                class="flex items-start gap-2"
+              >
+                <!-- Show icon only for bot on the left -->
+                <!--
+                <span v-if="msg.sender !== 'user'" class="bot-icon">
+                  <img src="/svg/chat-icon.svg" alt="" class="w-8 h-8 mt-1" />
+                </span>
+                -->
+
+                <div
+                  :class="[
+                    msg.sender === 'user'
+                      ? 'bg-orange-100 text-orange-900 self-end rounded-br-none'
+                      : 'bg-gradient-to-r from-[#E65C00] to-[#D8B50B] text-white rounded-bl-none',
+                    'font-inter rounded-xl px-4 py-2 text-[16px] max-w-xs shadow-md whitespace-pre-wrap message-bubble',
+                  ]"
+                  v-html="msg.text"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Typing indicator - now appears at the bottom in normal flow -->
+            <div
+              v-if="isGenerating"
+              class="typing-indicator flex flex-col justify-start"
+            >
+              <span class="text-[12px] font-semibold mb-1 select-none text-white">
+                {{ botName }}
+              </span>
+              <div class="flex items-start gap-2 justify-start">
+                <span class="bot-icon">
+                  <img src="/svg/chat-icon.svg" alt="" class="w-8 h-8 mt-1" />
+                </span>
+                <div
+                  class="md:bg-white/5 text-white rounded-xl px-4 py-2 text-[16px] max-w-xs shadow-md rounded-bl-none"
+                >
+                  <em class="typing-text">{{ botName }} is typing...</em>
+                  <span class="typing-dots">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Input -->
-        <form
-          class="chat-input flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/25 rounded-xl m-4 transition-all duration-200"
-          @submit="sendMessage"
-        >
-          <input
-            v-model="userInput"
-            type="text"
-            placeholder="Ask me anything"
-            class="bg-transparent flex-1 px-4 py-3 text-[15px] outline-none text-white placeholder-white/60"
-          />
-          <button
-            type="submit"
-            class="text-[#E65C00] rounded-full p-3 flex items-center justify-center transition-all duration-200 hover:bg-white/10 hover:scale-110 active:scale-95"
+          <!-- <div
+            class="hidden md:block absolute bottom-[58%] right-[-120px] xl:bottom-[32%] xl:right-[-195px] max-w-[600px] w-[70%]"
           >
-            <i class="pi pi-send text-[20px]"></i>
-          </button>
-        </form>
+            <img src="/images/hero2.webp" alt="" />
+          </div> -->
+
+          <!-- Input -->
+          <form
+            class="chat-input flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/25 rounded-xl m-4 transition-all duration-200"
+            @submit="sendMessage"
+          >
+            <input
+              v-model="userInput"
+              type="text"
+              placeholder="Ask me anything"
+              class="bg-transparent flex-1 px-4 py-3 text-[15px] outline-none text-white placeholder-white/60"
+            />
+            <button
+              type="submit"
+              class="text-[#E65C00] rounded-full p-3 flex items-center justify-center transition-all duration-200"
+            >
+              <i class="pi pi-send text-[20px]"></i>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -469,7 +534,7 @@ defineExpose({ open, close });
 
 .chat-container {
   display: flex;
-  flex-direction: column-reverse; /* Reverse column direction */
+  flex-direction: column; /* Normal column direction */
   overflow-y: auto;
 }
 
