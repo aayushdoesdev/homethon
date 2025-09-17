@@ -291,9 +291,11 @@ defineExpose({ open, close });
     <div
       class="max-w-7xl mx-auto relative z-20 flex flex-col items-center justify-between md:justify-center h-full px-4 xl:px-0"
     >
-      <Vue3Marquee :gradient="true"
-          :gradient-color="[0, 0, 0]"
-          gradient-length="20%">
+      <Vue3Marquee
+        :gradient="true"
+        :gradient-color="[0, 0, 0]"
+        gradient-length="20%"
+      >
         <div
           class="md:hidden bg-white/10 py-6 px-2 w-full rounded-2xl flex items-center justify-between relative mr-10 min-w-[300px] h-[150px]"
         >
@@ -313,7 +315,7 @@ defineExpose({ open, close });
           </div>
         </div>
         <div
-          class="md:hidden bg-white/10 py-6 px-2 w-full rounded-2xl flex items-center justify-between relative mr-10  min-w-[350px] h-[150px]"
+          class="md:hidden bg-white/10 py-6 px-2 w-full rounded-2xl flex items-center justify-between relative mr-10 min-w-[350px] h-[150px]"
         >
           <div class="">
             <img
@@ -337,7 +339,7 @@ defineExpose({ open, close });
       >
         <!-- Header -->
         <div
-          class="hidden md:flex chat-header md:bg-white/5 p-4 text-black items-center gap-3 rounded-t-3xl"
+          class="flex chat-header md:bg-white/5 p-4 text-black items-center gap-3 rounded-t-3xl"
         >
           <h1
             class="font-inter gradient-text font-medium text-[30px] md:text-[40px]"
@@ -349,7 +351,7 @@ defineExpose({ open, close });
         <!-- Chat body -->
         <div
           ref="chatContainer"
-          class="chat-body flex-1 overflow-y-auto overflow-x-hidden flex-col-reverse p-5 flex gap-4 min-h-[300px] max-h-[calc(100vh-380px)] md:min-h-[230px] md:max-h-[230px] no-scrollbar md:bg-white/5 relative"
+          class="chat-body flex-1 overflow-y-auto overflow-x-hidden flex-col-reverse p-5 flex gap-4 min-h-[300px] max-h-[calc(100dvh-380px)] md:min-h-[230px] md:max-h-[230px] no-scrollbar md:bg-white/5 relative"
         >
           <div
             v-for="(msg, idx) in convo.slice().reverse()"
@@ -442,6 +444,11 @@ defineExpose({ open, close });
       class="hidden md:block absolute bottom-[50%] md:bottom-0 md:left-0 max-w-[600px] xl:w-[40%]"
     >
       <img src="/images/hero.webp" alt="" />
+    </div>
+    <div class="md:hidden fixed -bottom-48 right-[20%]">
+      <div
+        class="w-[250px] h-[250px] rounded-full bg-orange-500 blur-2xl opacity-50"
+      ></div>
     </div>
   </section>
 </template>
