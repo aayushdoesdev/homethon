@@ -406,7 +406,7 @@ async function sendMessage(event) {
         </div>
 
         <div
-          class="w-full md:w-[60%] mx-auto max-w-full rounded-3xl shadow-lg flex flex-col md:bg-white/5 backdrop-blur-sm relative z-10 border border-white/25"
+          class="w-full md:w-[80%] xl:w-[60%] mx-auto rounded-3xl shadow-lg flex flex-col md:bg-white/5 backdrop-blur-sm relative z-10 border border-white/25"
         >
           <!-- Chat body -->
           <div
