@@ -287,11 +287,11 @@ defineExpose({ open, close });
 </script>
 
 <template>
-  <section class="py-10 h-screen bg-black relative overflow-hidden">
+  <section class="h-screen bg-black relative overflow-hidden">
     <div
       class="max-w-7xl mx-auto relative z-20 flex flex-col items-center justify-between md:justify-center h-full px-4 xl:px-0"
     >
-      <Vue3Marquee
+      <!-- <Vue3Marquee
         :gradient="true"
         :gradient-color="[0, 0, 0]"
         gradient-length="20%"
@@ -332,10 +332,10 @@ defineExpose({ open, close });
             <p class="border-l-4 pl-2 text-[13px]">NAREDCO/ Homethon FAQ’s</p>
           </div>
         </div>
-      </Vue3Marquee>
+      </Vue3Marquee> -->
 
       <div
-        class="w-full md:w-[60%] mx-auto max-w-full rounded-3xl shadow-lg flex flex-col mt-6 md:bg-white/5 backdrop-blur-sm relative z-10 md:border border-white/25"
+        class="w-full md:w-[60%] mx-auto max-w-full rounded-3xl shadow-lg flex flex-col mt-6 md:bg-white/5 backdrop-blur-sm relative z-10 border border-white/25"
       >
         <!-- Header -->
         <div
@@ -351,7 +351,7 @@ defineExpose({ open, close });
         <!-- Chat body -->
         <div
           ref="chatContainer"
-          class="chat-body flex-1 overflow-y-auto overflow-x-hidden flex-col-reverse p-5 flex gap-4 min-h-[300px] max-h-[calc(100dvh-380px)] md:min-h-[230px] md:max-h-[230px] no-scrollbar md:bg-white/5 relative"
+          class="chat-body flex-1 overflow-y-auto overflow-x-hidden flex-col-reverse p-5 flex gap-4 min-h-[65vh] max-h-[65vh] md:min-h-[230px] md:max-h-[230px] no-scrollbar md:bg-white/5 relative"
         >
           <div
             v-for="(msg, idx) in convo.slice().reverse()"
