@@ -7,6 +7,7 @@ import AddressSection from '@/sections/homeSections/AddressSection.vue';
 import RegisterSection from '@/sections/homeSections/RegisterSection.vue';
 import BotSection from '@/sections/homeSections/BotSection.vue';
 import BotSection2 from '@/sections/homeSections/BotSection2.vue';
+import BotSection3 from '@/sections/homeSections/BotSection3.vue';
 </script>
 
 <template>
@@ -18,7 +19,8 @@ import BotSection2 from '@/sections/homeSections/BotSection2.vue';
         <!-- <BotSection/> -->
         <!-- <AddressSection/>
         <RegisterSection/> -->
-        <BotSection2/>
+        <!-- <BotSection2/> -->
+         <BotSection3/>
     </main>
 </template>
 

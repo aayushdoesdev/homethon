@@ -30,7 +30,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 h-full w-full overflow-hidden bg-gradient-to-b from-[#1B2735] to-[#090A0F] z-0">
+  <div class="fixed inset-0 h-full w-full overflow-hidden bg-black z-0">
     <!-- Small stars -->
     <div
       class="absolute"

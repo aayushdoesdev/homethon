@@ -2,6 +2,8 @@
 import { ref, nextTick, onMounted, watch } from "vue";
 import gsap from "gsap";
 import StarsBg from "@/components/StarsBg.vue";
+import GsapFade from "@/components/Gsapfade.vue";
+import LottieAnimation from "@/components/LottieAnimation.vue";
 
 // LocalStorage keys
 const LOCAL_USER_KEY = "mychat_name";
@@ -30,23 +32,9 @@ const showHeader = ref(true);
 const showIntro = ref(true);
 const showChat = ref(false);
 
-const introLines = [
-  "👋 Meet MR. Homethon",
-  "Here to help you find projects in your budget,",
-  "Check price trends, access RERA info,",
-  "And get quick answers to all your FAQs.",
-];
-
 // Store user profile
 const userName = ref(localStorage.getItem(LOCAL_USER_KEY) || "");
 const userId = ref(localStorage.getItem(LOCAL_ID_KEY) || "");
-
-function open() {
-  show.value = true;
-}
-function close() {
-  show.value = false;
-}
 
 // Enhanced scroll function with better reliability
 function scrollToBottom() {
@@ -54,36 +42,40 @@ function scrollToBottom() {
     requestAnimationFrame(() => {
       chatContainer.value.scrollTo({
         top: chatContainer.value.scrollHeight,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     });
   }
 }
 
 // Enhanced watch for convo with better timing
-watch(convo, async (newConvo, oldConvo) => {
-  await nextTick();
-  
-  // Add delay to ensure DOM is fully rendered
-  setTimeout(() => {
-    scrollToBottom();
-    
-    // Only animate if a new message was added (not on initialization)
-    if (newConvo.length > (oldConvo?.length || 0)) {
-      const messages = chatContainer.value?.querySelectorAll(".chat-message");
-      if (messages && messages.length > 0) {
-        const newestMessage = messages[messages.length - 1];
-        if (newestMessage) {
-          gsap.fromTo(
-            newestMessage,
-            { y: 30, opacity: 0, scale: 0.95 },
-            { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }
-          );
+watch(
+  convo,
+  async (newConvo, oldConvo) => {
+    await nextTick();
+
+    // Add delay to ensure DOM is fully rendered
+    setTimeout(() => {
+      scrollToBottom();
+
+      // Only animate if a new message was added (not on initialization)
+      if (newConvo.length > (oldConvo?.length || 0)) {
+        const messages = chatContainer.value?.querySelectorAll(".chat-message");
+        if (messages && messages.length > 0) {
+          const newestMessage = messages[messages.length - 1];
+          if (newestMessage) {
+            gsap.fromTo(
+              newestMessage,
+              { y: 30, opacity: 0, scale: 0.95 },
+              { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }
+            );
+          }
         }
       }
-    }
-  }, 100);
-}, { deep: true });
+    }, 100);
+  },
+  { deep: true }
+);
 
 // Enhanced watch for typing indicator
 watch(isGenerating, async (newVal) => {
@@ -121,13 +113,6 @@ function escapeHtml(text) {
 // On component mount
 onMounted(() => {
   if (userName.value && userId.value) {
-    // If user info exists, show welcome back message
-    // convo.value.push({
-    //   sender: "bot",
-    //   text: `What are you looking for today?`,
-    //   buttons: null,
-    //   image: null,
-    // });
   } else if (!userName.value && convo.value.length === 0) {
     // Prompt for name if no user info found
     convo.value.push({
@@ -232,16 +217,21 @@ onMounted(async () => {
     } else {
       tl.to(
         lines[i - 1],
-        { y: -20, opacity: 0, duration: 0.8, ease: "power3.inOut", onComplete: () => {
-          lines[i - 1].style.display = "none";
-        }},
+        {
+          y: -20,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.inOut",
+          onComplete: () => {
+            lines[i - 1].style.display = "none";
+          },
+        },
         "+=0.6"
-      )
-        .fromTo(
-          line,
-          { y: 20, opacity: 0, display: "block" },
-          { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
-        );
+      ).fromTo(
+        line,
+        { y: 20, opacity: 0, display: "block" },
+        { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }
+      );
     }
   });
 });
@@ -298,13 +288,14 @@ async function sendMessage(event) {
 
       convo.value.push({
         sender: "bot",
-        text: data[0]?.text ?? `Thanks, ${userName.value}! How can I help you today?`,
+        text:
+          data[0]?.text ??
+          `Thanks, ${userName.value}! How can I help you today?`,
       });
 
       // Force scroll after adding bot response
       await nextTick();
       setTimeout(() => scrollToBottom(), 100);
-
     } catch (error) {
       convo.value.push({ sender: "bot", text: "Error connecting to bot." });
       await nextTick();
@@ -318,11 +309,11 @@ async function sendMessage(event) {
 
   // Normal chat flow after name is set
   convo.value.push({ sender: "user", text: escapeHtml(message) });
-  
+
   // Force scroll after adding user message
   await nextTick();
   scrollToBottom();
-  
+
   isGenerating.value = true;
 
   // Minimal payload for normal messages as well
@@ -343,7 +334,10 @@ async function sendMessage(event) {
       }
     );
     const data = await response.json();
-    const botText = data?.data?.data?.body?.[0]?.text ?? data[0]?.text ?? `Thanks, ${userName.value}!`;
+    const botText =
+      data?.data?.data?.body?.[0]?.text ??
+      data[0]?.text ??
+      `Thanks, ${userName.value}!`;
 
     convo.value.push({
       sender: "bot",
@@ -353,7 +347,6 @@ async function sendMessage(event) {
     // Force scroll after adding bot response
     await nextTick();
     setTimeout(() => scrollToBottom(), 100);
-
   } catch (error) {
     convo.value.push({
       sender: "bot",
@@ -369,151 +362,104 @@ async function sendMessage(event) {
 </script>
 
 <template>
-  <section class="h-screen bg-black relative overflow-hidden">
-          <StarsBg />
-    <!-- Intro Section -->
+  <section class="h-[100dvh] overflow-y-hidden">
+    <StarsBg />
     <div
-      v-if="showIntro"
-      class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-50"
+      class="relative h-full w-full px-4 xl:px-0 flex flex-col z-30"
+      :class="
+        showHeader ? 'justify-center items-center' : 'justify-end items-center'
+      "
     >
-      <div
-        class="text-[30px] md:text-[50px] font-bold leading-snug max-w-7xl"
-      >
-        <span
-          v-for="(line, idx) in introLines"
-          :key="idx"
-          class="intro-line block mb-2 gradient-text"
-          style="opacity: 0"
-
+      <!-- Title -->
+      <GsapFade delay="0.2" v-if="showHeader" class="flex items-start flex-col w-full md:w-[80%] xl:w-[60%]">
+        <h1
+          class="font-inter gradient-text font-medium leading-[50px] md:leading-[65px] text-[40px] md:text-[60px]"
         >
-          {{ line }}
-        </span>
-      </div>
-    </div>
+          Meet Mr. Homethon
+        </h1>
 
-    <div v-show="showChat" class="relative h-full w-full">
-      <!-- Center chat panel vertically and horizontally using flex -->
+        <p class="text-white md:text-[22px] font-inter">
+          here to help you with everything you need!
+        </p>
+      </GsapFade>
+
+      <!-- Messages -->
       <div
-        class="absolute inset-0 flex flex-col items-center justify-center z-30 px-4 xl:px-0"
+        v-if="!showHeader"
+        ref="chatContainer"
+        class="w-full md:w-[80%] xl:w-[60%] flex flex-col flex-1 overflow-y-auto mt-4 mb-8 no-scrollbar"
       >
-        <!-- Header -->
-        <div v-if="showHeader" class="flex chat-header p-4 items-center gap-3">
-          <h1
-            class="font-inter gradient-text font-medium text-[30px] md:text-[60px]"
+        <div
+          v-for="(msg, idx) in convo"
+          :key="idx"
+          :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'"
+          class="chat-message flex flex-col"
+        >
+          <span
+            class="text-[12px] font-semibold mb-1 select-none text-white"
+            :class="msg.sender === 'user' ? 'self-end' : 'self-start'"
           >
-            Hey,<br/> How can I help you ?
-          </h1>
+            {{ msg.sender === "user" ? "User" : botName }}
+          </span>
+
+          <!-- Wrap icon and message in a horizontal flex -->
+          <div
+            :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'"
+            class="flex items-start gap-2"
+          >
+            <div
+              :class="[
+                msg.sender === 'user'
+                  ? 'bg-orange-100 text-orange-900 self-end rounded-br-none'
+                  : 'bg-gradient-to-r from-[#E65C00] to-[#D8B50B] text-white rounded-bl-none',
+                'font-inter rounded-xl px-4 py-2 text-[16px] max-w-xs shadow-md whitespace-pre-wrap message-bubble',
+              ]"
+              v-html="msg.text"
+            ></div>
+          </div>
         </div>
 
-        <div
-          class="w-full md:w-[80%] xl:w-[60%] mx-auto rounded-3xl shadow-lg flex flex-col md:bg-white/5 backdrop-blur-sm relative z-10 border border-white/25"
-        >
-          <!-- Chat body -->
+        <div class="typing-indicator-container h-16">
           <div
-            ref="chatContainer"
-            class="chat-body flex-1 overflow-y-auto overflow-x-hidden flex-col p-5 flex gap-4 max-h-[70dvh] md:min-h-[100px] md:max-h-[500px] no-scrollbar md:bg-white/5 relative"
+            v-show="isGenerating"
+            class="typing-indicator flex flex-col justify-start"
           >
-            <!-- Messages in normal order -->
-            <div
-              v-for="(msg, idx) in convo"
-              :key="idx"
-              :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'"
-              class="chat-message flex flex-col"
-            >
-              <span
-                class="text-[12px] font-semibold mb-1 select-none text-white"
-                :class="msg.sender === 'user' ? 'self-end' : 'self-start'"
-              >
-                {{ msg.sender === "user" ? "User" : botName }}
+            <span class="text-[12px] font-semibold mb-1 select-none text-white">
+              {{ botName }}
+            </span>
+            <div class="flex items-start gap-2 justify-start">
+              <span class="bot-icon">
+                <img src="/svg/chat-icon.svg" alt="" class="w-8 h-8 mt-1" />
               </span>
-
-              <!-- Wrap icon and message in a horizontal flex -->
               <div
-                :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'"
-                class="flex items-start gap-2"
+                class="bg-[#e65c00] text-white rounded-xl px-4 text-[16px] max-w-xs shadow-md rounded-bl-none flex items-center"
               >
-                <!-- Show icon only for bot on the left -->
-                <!--
-                <span v-if="msg.sender !== 'user'" class="bot-icon">
-                  <img src="/svg/chat-icon.svg" alt="" class="w-8 h-8 mt-1" />
-                </span>
-                -->
-
-                <div
-                  :class="[
-                    msg.sender === 'user'
-                      ? 'bg-orange-100 text-orange-900 self-end rounded-br-none'
-                      : 'bg-gradient-to-r from-[#E65C00] to-[#D8B50B] text-white rounded-bl-none',
-                    'font-inter rounded-xl px-4 py-2 text-[16px] max-w-xs shadow-md whitespace-pre-wrap message-bubble',
-                  ]"
-                  v-html="msg.text"
-                ></div>
-              </div>
-            </div>
-
-            <!-- Typing indicator - now appears at the bottom in normal flow -->
-            <div
-              v-if="isGenerating"
-              class="typing-indicator flex flex-col justify-start"
-            >
-              <span class="text-[12px] font-semibold mb-1 select-none text-white">
-                {{ botName }}
-              </span>
-              <div class="flex items-start gap-2 justify-start">
-                <span class="bot-icon">
-                  <img src="/svg/chat-icon.svg" alt="" class="w-8 h-8 mt-1" />
-                </span>
-                <div
-                  class="md:bg-white/5 text-white rounded-xl px-4 py-2 text-[16px] max-w-xs shadow-md rounded-bl-none"
-                >
-                  <em class="typing-text">{{ botName }} is typing...</em>
-                  <span class="typing-dots">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                  </span>
+                <em class="typing-text">{{ botName }} is typing</em>
+                <div class="w-10">
+                  <LottieAnimation animationPath="/animations/loading.json" />
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- <div
-            class="hidden md:block absolute bottom-[58%] right-[-120px] xl:bottom-[32%] xl:right-[-195px] max-w-[600px] w-[70%]"
-          >
-            <img src="/images/hero2.webp" alt="" />
-          </div> -->
-
-          <!-- Input -->
-          <form
-            class="chat-input flex items-center gap-2 backdrop-blur-sm bg-white/5 border border-white/25 rounded-xl m-4 transition-all duration-200"
-            @submit="sendMessage"
-          >
-            <input
-              v-model="userInput"
-              type="text"
-              placeholder="Ask me anything"
-              class="bg-transparent flex-1 px-4 py-3 text-[15px] outline-none text-white placeholder-white/60"
-            />
-            <button
-              type="submit"
-              class="text-[#E65C00] rounded-full p-3 flex items-center justify-center transition-all duration-200"
-            >
-              <i class="pi pi-send text-[20px]"></i>
-            </button>
-          </form>
         </div>
       </div>
-    </div>
 
-    <div
-      class="hidden md:block absolute bottom-[50%] md:bottom-0 md:left-0 max-w-[600px] xl:w-[40%]"
-    >
-      <img src="/images/hero.webp" alt="" />
-    </div>
-    <div class="md:hidden fixed -bottom-48 right-[20%]">
-      <div
-        class="w-[250px] h-[250px] rounded-full bg-orange-500 blur-2xl opacity-50"
-      ></div>
+      <!-- Input box -->
+      <GsapFade delay="0.3"
+        class="w-full md:w-[80%] xl:w-[60%] border border-[#e65c00] rounded-2xl bg-white/5 backdrop-blur-sm flex items-center gap-2 pr-4 mt-6 mb-10 md:my-6"
+      >
+        <input
+          v-model="userInput"
+          type="text"
+          placeholder="Ask me anything"
+          class="w-full px-4 py-4 md:py-6 bg-transparent rounded-2xl outline-none text-white"
+          @keyup.enter="sendMessage"
+        />
+        <button
+          @click="sendMessage"
+          class="pi pi-arrow-right p-3 md:text-[20px] text-white rounded-full bg-gradient-to-r from-[#e65c00] to-[#d8b50b]"
+        ></button>
+      </GsapFade>
     </div>
   </section>
 </template>
@@ -547,11 +493,6 @@ async function sendMessage(event) {
 /* Message bubble hover effects */
 .message-bubble {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.message-bubble:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 /* Bot icon subtle animation */
@@ -611,5 +552,11 @@ async function sendMessage(event) {
 
 .chat-input button:hover {
   box-shadow: 0 0 20px rgba(230, 92, 0, 0.4);
+}
+
+.typing-indicator-container {
+  height: 4rem; /* Adjust based on your typing indicator size */
+  min-height: 4rem;
+  margin-bottom: 1rem; /* or same space as when typing indicator is visible */
 }
 </style>
