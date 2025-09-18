@@ -371,7 +371,11 @@ async function sendMessage(event) {
       "
     >
       <!-- Title -->
-      <GsapFade delay="0.2" v-if="showHeader" class="flex items-start flex-col w-full md:w-[80%] xl:w-[60%]">
+      <GsapFade
+        delay="0.2"
+        v-if="showHeader"
+        class="flex items-start flex-col w-full md:w-[80%] xl:w-[60%]"
+      >
         <h1
           class="font-inter gradient-text font-medium leading-[50px] md:leading-[65px] text-[40px] md:text-[60px]"
         >
@@ -445,8 +449,9 @@ async function sendMessage(event) {
       </div>
 
       <!-- Input box -->
-      <GsapFade delay="0.3"
-        class="w-full md:w-[80%] xl:w-[60%] border border-[#e65c00] rounded-2xl bg-white/5 backdrop-blur-sm flex items-center gap-2 pr-4 mt-6 mb-10 md:my-6"
+      <GsapFade
+        delay="0.3"
+        class="w-full md:w-[80%] xl:w-[60%] border border-[#e65c00] rounded-2xl bg-white/5 backdrop-blur-sm flex items-center gap-2 pr-4 mt-6 mb-10 md:my-6 glowing-border"
       >
         <input
           v-model="userInput"
@@ -558,5 +563,24 @@ async function sendMessage(event) {
   height: 4rem; /* Adjust based on your typing indicator size */
   min-height: 4rem;
   margin-bottom: 1rem; /* or same space as when typing indicator is visible */
+}
+
+.glowing-border {
+  border-color: #e65c00;
+  box-shadow: 0 0 8px #e65c00, 0 0 20px #e65c00, 0 0 30px #d88b00,
+    0 0 40px #e65c00;
+  animation: glowPulse 2s infinite alternate ease-in-out;
+  transition: box-shadow 0.3s ease;
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 2px #e65c00, 0 0 2px #e65c00, 0 0 2px #d88b00,
+      0 0 40px #e65c00;
+  }
+  100% {
+    box-shadow: 0 0 2px #ffb84d, 0 0 2px #ffb84d, 0 0 2px #ffb84d,
+      0 0 50px #ffb84d;
+  }
 }
 </style>
