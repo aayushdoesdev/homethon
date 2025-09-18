@@ -2,7 +2,7 @@
 import { ref, nextTick, onMounted, watch } from "vue";
 import gsap from "gsap";
 import StarsBg from "@/components/StarsBg.vue";
-import GsapFade from "@/components/Gsapfade.vue";
+import GsapFade from "@/components/GsapFade.vue";
 import LottieAnimation from "@/components/LottieAnimation.vue";
 
 // LocalStorage keys
