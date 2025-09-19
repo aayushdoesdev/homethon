@@ -242,6 +242,7 @@ async function sendMessage(event) {
   if (!userInput.value.trim()) return;
 
   const message = userInput.value.trim();
+  userInput.value = ""
 
   if (showHeader.value) {
     showHeader.value = false;
@@ -462,7 +463,9 @@ async function sendMessage(event) {
         />
         <button
           @click="sendMessage"
+          :disabled="isGenerating"
           class="pi pi-arrow-right p-3 md:text-[20px] text-white rounded-full bg-gradient-to-r from-[#e65c00] to-[#d8b50b]"
+          :class="isGenerating ? 'cursor-not-allowed' : 'cursor-pointer'"
         ></button>
       </GsapFade>
     </div>
