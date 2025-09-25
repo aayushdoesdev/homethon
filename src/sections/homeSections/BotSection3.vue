@@ -242,7 +242,7 @@ async function sendMessage(event) {
   if (!userInput.value.trim()) return;
 
   const message = userInput.value.trim();
-  userInput.value = ""
+  userInput.value = "";
 
   if (showHeader.value) {
     showHeader.value = false;
@@ -468,6 +468,13 @@ async function sendMessage(event) {
           :class="isGenerating ? 'cursor-not-allowed' : 'cursor-pointer'"
         ></button>
       </GsapFade>
+
+      <a href="https://www.brahmaastra.ai/" target="_blank" class="mb-2">
+        <div class="text-white font-inter font-semibold flex flex-col md:flex-row items-center">
+          <p class="md:text-[18px]">Powered by</p>
+          <img src="/images/main-logo.png" alt="" class="w-[250px] md:w-[300px]" />
+        </div>
+      </a>
     </div>
   </section>
 </template>
